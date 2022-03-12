@@ -5,11 +5,13 @@ import { Typography, Box } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../store/configureStore";
 import { checkNodesStatus, selectNodes } from "../reducers/nodes";
+import { fetchBlocks, selectBlocks } from '../reducers/blocks';
 
 export const Nodes: React.FC = () => {
   const [expandedNodeURL, setExpandedNodeURL] = useState<null | string>(null);
   const dispatch = useDispatch();
   const nodes = useAppSelector(selectNodes);
+  const blocks = useAppSelector(selectBlocks);
 
   useEffect(() => {
     dispatch(checkNodesStatus(nodes));
@@ -17,6 +19,7 @@ export const Nodes: React.FC = () => {
   }, []);
 
   function toggleNodeExpanded(node: NodeType) {
+    dispatch(fetchBlocks(node));
     setExpandedNodeURL(node.url === expandedNodeURL ? null : node.url);
   }
 
@@ -28,6 +31,7 @@ export const Nodes: React.FC = () => {
       {nodes.map((node) => (
         <Node
           node={node}
+          blocks={blocks}
           key={node.url}
           expanded={node.url === expandedNodeURL}
           toggleNodeExpanded={toggleNodeExpanded}

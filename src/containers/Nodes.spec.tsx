@@ -26,11 +26,17 @@ describe("<Nodes />", () => {
     ],
   };
 
+  const blocks = {
+    list: [],
+    error: false,
+    loading: false,
+  }
+
   let store: MockStoreEnhanced<unknown, {}>;
 
   function setup(): JSX.Element {
     const middlewares = [thunk];
-    store = configureMockStore(middlewares)({ nodes });
+    store = configureMockStore(middlewares)({ nodes, blocks });
     return (
       <Provider store={store}>
         <ConnectedNodes />

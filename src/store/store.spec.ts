@@ -1,6 +1,8 @@
 import { AnyAction, configureStore, EnhancedStore } from "@reduxjs/toolkit";
 import { ThunkMiddleware } from "redux-thunk";
 import nodesReducer, { checkNodeStatus, NodesState } from "../reducers/nodes";
+import blocksReducer, { fetchBlocks } from "../reducers/blocks";
+import { Blocks as BlocksState } from "../types/Block";
 
 describe("Store", () => {
   const nodes = {
@@ -12,12 +14,20 @@ describe("Store", () => {
     ],
   };
 
+  const blocks = {
+    list: [],
+    error: false,
+    loading: false,
+  }
+
   let store: EnhancedStore<
-    { nodes: NodesState },
+    { nodes: NodesState, blocks: BlocksState },
     AnyAction,
     [
       | ThunkMiddleware<{ nodes: NodesState }, AnyAction, null>
       | ThunkMiddleware<{ nodes: NodesState }, AnyAction, undefined>
+      | ThunkMiddleware<{ blocks: BlocksState }, AnyAction, null>
+      | ThunkMiddleware<{ blocks: BlocksState }, AnyAction, undefined>
     ]
   >;
 
@@ -25,8 +35,9 @@ describe("Store", () => {
     store = configureStore({
       reducer: {
         nodes: nodesReducer,
+        blocks: blocksReducer,
       },
-      preloadedState: { nodes },
+      preloadedState: { nodes, blocks },
     });
   });
   afterAll(() => {});
@@ -87,5 +98,32 @@ describe("Store", () => {
     };
 
     expect(actual.nodes).toEqual(expected);
+  });
+
+  it("should display results when necessary data is provided for blocks", () => {
+    const actions = [
+      {
+        type: fetchBlocks.fulfilled.type,
+        payload: {
+          data: [
+            { attributes: { index: 1, data: 'delta' }},
+            { attributes: { index: 2, data: 'alpha' }},
+          ]
+        },
+      }
+    ];
+    actions.forEach((action) => store.dispatch(action));
+
+    const actual = store.getState();
+    const expected = {
+      list: [
+        { index: 1, data: 'delta' },
+        { index: 2, data: 'alpha' },
+      ],
+      error: false,
+      loading: false,
+    };
+
+    expect(actual.blocks).toEqual(expected);
   });
 });
